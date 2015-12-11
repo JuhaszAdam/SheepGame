@@ -24,6 +24,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     long t;
 
+    int sheepCount = 20;
+
     /**
      * Constructor.
      */
@@ -118,7 +120,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
         }
 
-        g2d.setStroke(new BasicStroke(((float) (0.2f * (1.0f + Math.sin(2.0f * Math.PI * t % 100.0f))) * 10.0f) + 4.0f));
+        g2d.setStroke(new BasicStroke(((float) (0.12f * (2.0f + Math.sin(2.0f * Math.PI * t / 10.0f % 100.0f))) * 10.0f) + 4.0f));
 
         g2d.setColor(colors[0]);
         g2d.drawOval(margin + radius + (padding * current.x), margin + radius + (padding * current.y), radius, radius);
@@ -128,6 +130,43 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         } else {
             g2d.drawOval(margin + radius + (padding * selected.x), margin + radius + (padding * selected.y), radius, radius);
         }
+    }
+
+    /**
+     * Wolf Won?
+     *
+     * @return boolean
+     */
+    private boolean wolfWon() {
+        return (sheepCount == 0);
+    }
+
+    /**
+     * Sheep Won?
+     *
+     * @return boolean
+     */
+    private boolean sheepWon() {
+        boolean columnIsSolid = true;
+        int wanderingSheep = sheepCount;
+
+        for (int x = 6; x >= 0 && columnIsSolid; x--) {
+            columnIsSolid = true;
+            for (int y = 0; y <= 6 && wanderingSheep > 0; y++) {
+                if (map[x][y] != null) {
+                    if (map[x][y].who == Who.Sheep) {
+                        wanderingSheep--;
+                    } else {
+                        columnIsSolid = false;
+                    }
+                }
+            }
+            if (wanderingSheep == 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -314,12 +353,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     map[x][y].who = currentWho;
                     map[(current.x + ((x - current.x) / 2))][(current.y + ((y - current.y) / 2))].who = Who.Nobody;
                     current = new Point(x, y);
+                    sheepCount--;
                 } else {
                     if (map[x][y].who != Who.Nobody) {
                         current = new Point(x, y);
                         currentWho = map[x][y].who;
                     }
                 }
+            }
+
+            Window.score.setText(" Remaining Sheep: " + sheepCount);
+
+            if (sheepWon()) {
+                Window.score.setText("Sheep Won!");
+            }
+
+            if (wolfWon()) {
+                Window.score.setText("Wolf Won!");
             }
 
             repaint();
@@ -338,7 +388,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             repaint();
         }
     }
-
 
     /**
      * Is the next field Empty?
@@ -445,7 +494,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 && (y <= 6)
                 && map[x][y] != null
                 && map[wX + betweenX][wY + betweenY] != null
-                && (((Math.abs(x - wX) == 2) && (Math.abs(y - wY) == 0)) || ((Math.abs(x - wX) == 0) && (Math.abs(y - wY) == 2)))
+                && (((Math.abs(x - wX) == 2) && (Math.abs(y - wY) == 0))
+                || ((Math.abs(x - wX) == 0) && (Math.abs(y - wY) == 2))
+                || ((Math.abs(x - wX) == 2) && (Math.abs(y - wY) == 2)))
                 && (map[wX + betweenX][wY + betweenY].who == Who.Sheep)
                 && (map[x][y].who == Who.Nobody)
                 && (map[wX][wY].dir[tarDir] == 1)

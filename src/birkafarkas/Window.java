@@ -5,6 +5,7 @@ import javax.swing.*;
 
 public class Window {
     private JFrame frame;
+    static JLabel score = new JLabel("You shouldn't see this!", SwingConstants.CENTER);
 
     /**
      * Launch the application.
@@ -33,22 +34,29 @@ public class Window {
     private void initialize() {
 
         frame = new JFrame();
-        frame.setBounds(560, 200, 800, 900);
+        frame.setBounds(560, 200, 700, 900);
         frame.setExtendedState(JFrame.MAXIMIZED_VERT);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         initWindow();
-
     }
 
+    /**
+     * Initializes Window
+     */
     private void initWindow() {
         JPanel wrapper = new JPanel();
-        wrapper.setLayout(new BorderLayout());
 
         GamePanel gamePanel = new GamePanel();
+        gamePanel.setPreferredSize(new Dimension(700, 800));
         frame.addKeyListener(gamePanel);
-        wrapper.add(gamePanel, BorderLayout.CENTER);
+        wrapper.add(gamePanel);
+
+        score.setFont(new Font("Courier New", Font.BOLD, 30));
+        score.setOpaque(true);
+        score.setPreferredSize(new Dimension(700, 200));
+        wrapper.add(score);
 
         frame.getContentPane().add(wrapper);
     }
